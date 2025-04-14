@@ -4,8 +4,8 @@
 | Nama       | NRP                      | Github    |
 |-----------------|----------------------------------|-----------|
 | Faisal Azmi Sirajuddin     | 5025231127              | [faalas](https://github.com/faalas) |
-| Miskiyah      | 5025231  | [miskiyy](https://github.com/miskiyy) |
-| M. Khibban     | 5025231126              | [khibban](https://github.com/khibban) |
+| Miskiyah      | 5025231119  | [miskiyy](https://github.com/miskiyy) |
+| Muhammad Khibban I'tishom     | 5025231126              | [khibban](https://github.com/khibban) |
 
 
 ## Deskripsi Singkat Project
