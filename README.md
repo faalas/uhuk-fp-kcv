@@ -55,6 +55,10 @@ root/
 ## Link Artikel Penjelasan Lengkap
 
 
+## Tambahan
+[EDA Coswara](https://colab.research.google.com/drive/1__cNngOWGZXaSey8YVlPDAJj34lDcW3A?usp=sharing)
+
+[EDA Coughvid](https://colab.research.google.com/drive/1aAyinanyo6rjQ62tnDUIQl5ieqsXtj1y?usp=sharing)
 
 ## Referensi
 Rouf, RJ & Arifianto, D 2022, Detection of COVID-19 Based on Cough Sound Using LSTM Algorithm, _Proceedings of the International Congress on Acoustics_.
