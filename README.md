@@ -14,16 +14,27 @@ Deteksi dini Covid-19 berdasarkan suara batuk dengan menggunakan model LSTM
 
 ## Struktur Direktori
 root\
+
 └── env
+
 └── ffmpeg\
+
 └── speechproc.py
+
 └── Dataset Coswara/
+
 └── Dataset Coswara Segmented/
+
 └── Dataset Coswara Cleaned/
+
 └── Dataset Cough Covid WAV/
+
 └── Dataset Cough Covid Segmented/
+
 └── Dataset Cough Covid Cleaned/
+
 └── features/
+
 └── script1, script2, dst...
 
 
