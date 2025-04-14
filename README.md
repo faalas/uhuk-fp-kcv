@@ -13,11 +13,11 @@ Deteksi dini Covid-19 berdasarkan suara batuk dengan menggunakan model LSTM
 
 
 ## Struktur Direktori
-root\
+root/
 
-└── env
+└── env/
 
-└── ffmpeg\
+└── ffmpeg/
 
 └── speechproc.py
 
