@@ -1,0 +1,141 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import time
+
+from sklearn.model_selection import train_test_split
+from imblearn.combine import SMOTEENN
+
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout, Flatten, BatchNormalization
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.metrics import Recall, Precision
+
+# Model2_10 SMOTEENN, tambah dropout after lstm, val_acc
+# --- Load semua fitur dan label ---
+X_mfcc      = np.load("features2/X_mfcc.npy")
+X_tonnetz   = np.load("features2/X_tonnetz.npy")
+X_mel       = np.load("features2/X_mel.npy")
+X_contrast  = np.load("features2/X_contrast.npy")
+X_chroma    = np.load("features2/X_chroma.npy")
+X_centroid  = np.load("features2/X_centroid.npy")
+X_bandwidth = np.load("features2/X_bandwidth.npy")
+X_flatness  = np.load("features2/X_flatness.npy")
+X_rolloff   = np.load("features2/X_rolloff.npy")
+y           = np.load("features2/y.npy")
+source      = np.load("features2/source.npy")
+
+# --- Gabungkan fitur ---
+X = np.array([
+    np.concatenate([X_mfcc[i], X_tonnetz[i], X_mel[i], X_contrast[i], X_chroma[i]])
+    for i in range(len(y))
+])
+
+# --- Oversampling SMOTE ---
+smote_enn = SMOTEENN(random_state=42)
+X_resampled, y_resampled = smote_enn.fit_resample(X, y)
+
+# --- Ubah shape jadi (samples, timesteps=1, features) untuk LSTM ---
+X_resampled = X_resampled.reshape((X_resampled.shape[0], 1, X_resampled.shape[1]))
+
+# --- Split train/test ---
+train_x, val_x, train_y, val_y = train_test_split(X_resampled, y_resampled, test_size=0.2, random_state=42)
+
+# --- Model LSTM ---
+def create_model():
+    model = Sequential()
+    model.add(BatchNormalization(input_shape=(train_x.shape[1], train_x.shape[2])))
+    model.add(LSTM(256, return_sequences=True))
+    model.add(Dropout(0.3))
+    model.add(BatchNormalization())
+    model.add(LSTM(256, return_sequences=True))
+    model.add(Dropout(0.3))
+    model.add(BatchNormalization())
+    model.add(LSTM(256))
+    model.add(BatchNormalization())
+    model.add(Flatten())
+    model.add(Dropout(0.2))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', Recall(name='recall'), Precision(name='precision')])
+    return model
+
+# --- Callback untuk simpan model terbaik ---
+checkpoint = ModelCheckpoint(
+    "model2_10.keras", monitor='val_accuracy', verbose=1,
+    save_best_only=True, save_weights_only=False, mode='auto'
+)
+
+# --- Callbacks ---
+early_stopping = EarlyStopping(
+    monitor='val_accuracy',
+    patience=5,          # Beri toleransi 10 epoch tanpa improvement
+    verbose=1,
+    mode='max',           # Untuk metric accuracy (maximize)
+    restore_best_weights=True  # Kembalikan ke weights terbaik
+)
+
+# --- Train model dengan callbacks ---
+model = create_model()
+start_time = time.time()
+
+try:
+    history = model.fit(
+        train_x, train_y,
+        validation_data=(val_x, val_y),
+        epochs=200,
+        batch_size=32,
+        callbacks=[checkpoint, early_stopping],
+        verbose=1
+    )
+except KeyboardInterrupt:
+    print("Training dihentikan oleh pengguna.")
+    model.save("model_terakhir.keras")
+    history = None  # supaya tidak error waktu plotting nanti
+
+end_time = time.time()
+
+# --- Evaluasi akhir ---
+print(f"--- {end_time - start_time:.2f} seconds ---")
+scores = model.evaluate(val_x, val_y, verbose=0)
+print("Accuracy: %.2f%%" % (scores[1]*100))
+
+# --- Plot Accuracy ---
+if history is not None and 'accuracy' in history.history:
+    plt.plot(history.history['accuracy'], label='Train Acc')
+    plt.plot(history.history['val_accuracy'], label='Val Acc')
+    plt.title('Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.grid()
+    plt.show()
+else:
+    print("History tidak berisi accuracy.")
+
+# --- Plot Loss ---
+if 'loss' in history.history:
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Val Loss')
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.grid()
+    plt.show()
+else:
+    print("History tidak berisi loss.")
+
+# --- Plot Recall (jika diset saat compile) ---
+if 'recall' in history.history or 'val_recall' in history.history:
+    recall_key = 'recall' if 'recall' in history.history else list(filter(lambda x: 'recall' in x, history.history.keys()))[0]
+    val_recall_key = 'val_' + recall_key if 'val_' + recall_key in history.history else list(filter(lambda x: 'val_recall' in x, history.history.keys()))[0]
+    
+    plt.plot(history.history[recall_key], label='Train Recall')
+    plt.plot(history.history[val_recall_key], label='Val Recall')
+    plt.title('Model Recall')
+    plt.ylabel('Recall')
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.grid()
+    plt.show()
+else:
+    print("Recall tidak tersedia. Pastikan recall diset saat compile.")
