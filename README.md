@@ -54,7 +54,7 @@ root/
 
 
 ## Link Artikel Penjelasan Lengkap
-
+[Mendeteksi COVID-19 dari Batuk? LSTM untuk Audio Processing]https://medium.com/@ayamiskiyah46/mendeteksi-covid-19-dari-batuk-lstm-untuk-audio-processing-75a658e1dec3
 
 ## Tambahan
 [EDA Coswara](https://colab.research.google.com/drive/1__cNngOWGZXaSey8YVlPDAJj34lDcW3A?usp=sharing)
